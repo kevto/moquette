@@ -15,6 +15,8 @@
  */
 package io.moquette.spi.persistence;
 
+import io.moquette.spi.persistence.mapdb.MapDBPersistentStore;
+
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore;
 import io.moquette.spi.IMessagesStore.StoredMessage;
@@ -22,10 +24,8 @@ import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
 
 /**

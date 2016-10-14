@@ -13,21 +13,27 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-package io.moquette.spi.persistence;
+package io.moquette.spi.persistence.mapdb;
 
+import io.moquette.spi.AbstractPersistentStore.PersistentSession;
 import io.moquette.spi.ClientSession;
 import io.moquette.spi.IMessagesStore.StoredMessage;
 import io.moquette.spi.ISessionsStore;
 import io.moquette.spi.MessageGUID;
 import io.moquette.spi.impl.Utils;
 import io.moquette.spi.impl.subscriptions.Subscription;
-import io.moquette.spi.persistence.MapDBPersistentStore.PersistentSession;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import org.mapdb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * ISessionsStore implementation backed by MapDB.
@@ -264,12 +270,14 @@ class MapDBSessionsStore implements ISessionsStore {
 	@Override
 	public StoredMessage getInflightMessage(String clientID, int messageID) {
 		Map<Integer, MessageGUID> clientEntries = m_inflightStore.get(clientID);
-		if (clientEntries == null)
-			return null;
+		if (clientEntries == null) {
+            return null;
+        }
         MessageGUID guid = clientEntries.get(messageID);
         LOG.info("inflight messageID {} guid <{}>", messageID, guid);
-		if (guid == null)
-			return null;
+		if (guid == null) {
+            return null;
+        }
 		return m_messagesStore.getMessageByGuid(guid);
 	}
 }

@@ -16,19 +16,21 @@
 package io.moquette.spi.impl;
 
 import io.moquette.BrokerConstants;
-import io.moquette.server.Server;
-import io.moquette.spi.IMessagesStore;
 import io.moquette.interception.InterceptHandler;
+import io.moquette.server.Server;
 import io.moquette.server.config.IConfig;
+import io.moquette.spi.IMessagesStore;
+import io.moquette.spi.IPersistentStore;
 import io.moquette.spi.ISessionsStore;
-import io.moquette.spi.impl.security.*;
+import io.moquette.spi.impl.security.ACLFileParser;
+import io.moquette.spi.impl.security.AcceptAllAuthenticator;
+import io.moquette.spi.impl.security.DenyAllAuthorizator;
+import io.moquette.spi.impl.security.FileAuthenticator;
+import io.moquette.spi.impl.security.PermitAllAuthorizator;
 import io.moquette.spi.impl.subscriptions.SubscriptionsStore;
-import io.moquette.spi.persistence.MapDBPersistentStore;
+import io.moquette.spi.persistence.mapdb.MapDBPersistentStore;
 import io.moquette.spi.security.IAuthenticator;
 import io.moquette.spi.security.IAuthorizator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -36,6 +38,8 @@ import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * It's main responsibility is bootstrap the ProtocolProcessor.
@@ -48,7 +52,7 @@ public class ProtocolProcessorBootstrapper {
 
     private SubscriptionsStore subscriptions;
 
-    private MapDBPersistentStore m_mapStorage;
+    private IPersistentStore m_mapStorage;
 
     private BrokerInterceptor m_interceptor;
 
@@ -74,8 +78,8 @@ public class ProtocolProcessorBootstrapper {
 
         m_mapStorage = new MapDBPersistentStore(props);
         m_mapStorage.initStore();
-        IMessagesStore messagesStore = m_mapStorage.messagesStore();
-        ISessionsStore sessionsStore = m_mapStorage.sessionsStore();
+        IMessagesStore messagesStore = m_mapStorage.getMessagesStore();
+        ISessionsStore sessionsStore = m_mapStorage.getSessionsStore();
 
         List<InterceptHandler> observers = new ArrayList<>(embeddedObservers);
         String interceptorClassName = props.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME);
@@ -143,7 +147,7 @@ public class ProtocolProcessorBootstrapper {
         m_processor.init(subscriptions, messagesStore, sessionsStore, authenticator, allowAnonymous, allowZeroByteClientId, authorizator, m_interceptor, props.getProperty(BrokerConstants.PORT_PROPERTY_NAME));
         return m_processor;
     }
-    
+
     private Object loadClass(String className, Class<?> cls, IConfig props) {
         Object instance = null;
         try {

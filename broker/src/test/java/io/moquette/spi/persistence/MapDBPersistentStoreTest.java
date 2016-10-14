@@ -15,6 +15,8 @@
  */
 package io.moquette.spi.persistence;
 
+import io.moquette.spi.persistence.mapdb.MapDBPersistentStore;
+
 import io.moquette.BrokerConstants;
 import io.moquette.server.IntegrationUtils;
 import io.moquette.server.config.IConfig;
@@ -29,11 +31,9 @@ import io.moquette.spi.impl.subscriptions.Subscription;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
 import static org.junit.Assert.*;
 
 /**
@@ -55,8 +55,8 @@ public class MapDBPersistentStoreTest {
         IConfig conf = new MemoryConfig(props);
         m_storageService = new MapDBPersistentStore(conf);
         m_storageService.initStore();
-        m_messagesStore = m_storageService.messagesStore();
-        m_sessionsStore = m_storageService.sessionsStore();
+        m_messagesStore = m_storageService.getMessagesStore();
+        m_sessionsStore = m_storageService.getSessionsStore();
     }
 
     @After
@@ -126,8 +126,8 @@ public class MapDBPersistentStoreTest {
 
         //verify the executor is shutdown
         assertTrue("Storage service scheduler can't be stopped in 3 seconds",
-                m_storageService.m_scheduler.awaitTermination(3, TimeUnit.SECONDS));
-        assertTrue(m_storageService.m_scheduler.isTerminated());
+                m_storageService.getScheduler().awaitTermination(3, TimeUnit.SECONDS));
+        assertTrue(m_storageService.getScheduler().isTerminated());
     }
 
     @Test
